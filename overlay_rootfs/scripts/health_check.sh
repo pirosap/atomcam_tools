@@ -36,7 +36,7 @@ if [ $RES -eq 0 ] ; then
       echo router=$ROUTER >> /media/mmc/healthcheck.log
       [ "$ROUTER" != "" ] && ping -c 1 $ROUTER >> /media/mmc/healthcheck.log 2>&1
       ping -c 1 8.8.8.8 >> /media/mmc/healthcheck.log 2>&1
-      ifconfig wlan0 >> /media/mmc/healthcheck.log 2>&1
+      ifconfig eth0 >> /media/mmc/healthcheck.log 2>&1
       df -k >> /media/mmc/healthcheck.log
       free >> /media/mmc/healthcheck.log
       killall -SIGUSR2 iCamera_app
@@ -46,9 +46,9 @@ if [ $RES -eq 0 ] ; then
       reboot
     fi
     echo $(date +"%Y/%m/%d %H:%M:%S : WiFi restart : error : ") $error >> /media/mmc/healthcheck.log
-    ifconfig wlan0 down
-    ifconfig wlan0 up
-    killall -USR1 udhcpc || udhcpc -i wlan0 -H ATOM -p /var/run/udhcpc.pid -b >> /media/mmc/healthcheck.log 2>&1
+    ifconfig eth0 down
+    ifconfig eth0 up
+    killall -USR1 udhcpc || udhcpc -i eth0 -H ATOM -p /var/run/udhcpc.pid -b >> /media/mmc/healthcheck.log 2>&1
   fi
   echo $retry $error > /tmp/healthcheck.retry_count
 else
