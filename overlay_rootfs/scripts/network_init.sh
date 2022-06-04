@@ -57,6 +57,8 @@ ifconfig lo up
 #fi
 
 modprobe r8152
+modprobe ax88179_178a
+modprobe asix
 
 count=0
 #while ! ip link | grep wlan0 > /dev/null
