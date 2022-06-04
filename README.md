@@ -6,7 +6,7 @@ atomcam_toolsのスクリプトを、ATOM Cam 2の無線LAN機能を無効化し
 
 ## 動作確認済みのUSB-Ethernetアダプタ
 
-- Amazon イーサネットアダプタ(Realtek RTL8152)
+- Amazon イーサネットアダプタ (Realtek RTL8152)
   - microUSB端子が比較的小さく、ATOM Cam 2のハウジングに繋ぐための加工が容易です。（少し削らないと入りません）
   - microUSB電源を接続することも、PoEスプリッタで電源供給することもできます。
 
