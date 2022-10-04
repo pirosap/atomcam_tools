@@ -73,13 +73,13 @@ if [ "$FMT" != "" ]; then
   TMPFILE="/media/mmc/tmp/mv_`cat /proc/sys/kernel/random/uuid`"
   /bin/busybox mv $1 $TMPFILE
   (
-    if [ "$STORAGE_CIFS" = "on" -o "$STORAGE_CIFS" = "record" ] && /tmp/system/bin/mount_cifs && [ ! -f /tmp/disable_cifs ] ; then
+    if [ "$STORAGE_CIFS" = "on" -o "$STORAGE_CIFS" = "record" ] && /tmp/system/bin/mount_cifs ; then
       TIME=`echo $2 | sed -e 's|^/media/mmc/record/||' -e 's|/||g' -e 's|.mp4$||'`
       CIFSFILE=`date -d $TIME +"record/$STORAGE_CIFS_PATH.mp4"`
       OUTFILE="/mnt/$HOSTNAME/$CIFSFILE"
       DIR_PATH=${OUTFILE%/*}
       mkdir -p $DIR_PATH
-      cp $TMPFILE $OUTFILE
+      cp -f $TMPFILE $OUTFILE
       STORAGE=", \"cifsFile\":\"${CIFSFILE}\""
     fi
 

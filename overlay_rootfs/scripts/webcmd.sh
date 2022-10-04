@@ -11,6 +11,8 @@ do
   params=${line#* }
   if [ "$cmd" = "reboot" ]; then
     echo "$cmd $params OK" >> /var/run/webres
+    /scripts/cmd timelapse stop
+    sleep 3
     killall -SIGUSR2 iCamera_app
     sync
     sync
@@ -22,7 +24,7 @@ do
     /scripts/set_crontab.sh
   fi
   if [ "$cmd" = "setwebhook" ]; then
-    kill -9 `pidof webhook.sh`
+    kill `ps -l | awk '/ps -l/ { next } /webhook.sh/ { print $3 } /awk  BEGIN/ { print $3 }'`
     /scripts/webhook.sh &
     echo "$cmd $params OK" >> /var/run/webres
     cmd=""
@@ -80,7 +82,8 @@ do
     mkdir -p /media/mmc/update
     (cd /media/mmc/update; curl -H 'Cache-Control: no-cache, no-store' -H 'Pragma: no-cache' -sL -o atomcam_tools.zip $ZIP_URL)
     echo "$cmd $params OK" >> /var/run/webres
-    sleep 1
+    /scripts/cmd timelapse stop
+    sleep 3
     killall -SIGUSR2 iCamera_app
     sync
     sync
@@ -92,15 +95,17 @@ do
     pos=`/scripts/cmd move`;
     awk '
     /slide_x/ {
-      pan=POS;
-      gsub(/ .*$/, "", pan);
-      printf("slide_x=%d\n", int(pan * 100 + 0.5));
+      split(POS, pos, " ");
+      x = int(pos[1] * 100 + 0.5);
+      if(pos[3] != 0) x = 35000 - x;
+      printf("slide_x=%d\n", x);
       next;
     }
     /slide_y/ {
-      tilt=POS;
-      gsub(/^.* /, "", tilt);
-      printf("slide_y=%d\n", int(tilt * 100 + 0.5));
+      split(POS, pos, " ");
+      y = int(pos[2] * 100 + 0.5);
+      if(pos[4] != 0) y = 18000 - y;
+      printf("slide_y=%d\n", y);
       next;
     }
     {
@@ -115,15 +120,6 @@ do
   if [ "$cmd" = "moveinit" ]; then
     /scripts/motor_init
     echo "$cmd OK" >> /var/run/webres
-    cmd=""
-  fi
-  if [ "$cmd" = "cifsaccess" ]; then
-    if [ "$params" = "disable" ]; then
-      touch /tmp/disable_cifs
-    else
-      rm -f /tmp/disable_cifs
-    fi
-    echo "$cmd $params OK" >> /var/run/webres
     cmd=""
   fi
   if [ "$cmd" != "" ]; then

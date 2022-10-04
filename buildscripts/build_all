@@ -14,4 +14,5 @@ mkdir -p target/usr/lib
 cp -dpf staging/usr/lib/libstdc++.so* target/usr/lib/
 find ./build -name ".stamp_target_installed*" -print | xargs rm -f
 cd /atomtools/build/buildroot-2016.02
+
 make

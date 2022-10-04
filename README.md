@@ -79,8 +79,16 @@ Ver.1.3.0以降は修正しています。
   - CIFS(smb)プロトコルでNASへSD-Cardへ保存している映像と同じものを保存します。
   - SMB1.0はSecurity的に非推奨のため対応しません。2.0以上に対応のNASを使用してください。
 
+- Time Lapse録画(experimental)
+
+  - 定期的に周期と回数を指定してTime Lapse録画を実行します。
+  - SD-Card録画、NAS録画の設定がonになっているメディアに記録します。
+  - SD-Cardのtime_lapse/フォルダに中間ファイルを生成し、最後にmp4に変換して指定メディアに記録します。
+  - 現状は実験的な機能なので中間ファイルは消さずに残していますが、ファイルの自動削除をonにしていると指定日数後に削除されます。
+
 - RTSPServer(Port:8554)
   - RTSP streaming を送出します。
+  - Main(video0)に1080p AVC、Sub(video1)に360p HEVCを出しています。
 
 - avahi(mDNS)機能(Port:5353)
   - microSDカードのhostnameファイルを編集することでデバイス名を変更できます（WebUIからも変更可能）
@@ -137,11 +145,11 @@ sshは物理的にSD-Cardへアクセスして公開鍵を書かないとlogin�
 
  atomcam_toolsは以下のATOMCamのVersionで動作確認しています。更新した場合機能が使えなくなることもあるのでご注意ください。
 
-ATOMCam Ver.4.33.3.64, 4.33.3.66, 4.33.3.68
+ATOMCam Ver. 4.33.3.68
 
-ATOMCam2 Ver.4.58.0.65, 4.58.0.71, 4.58.0.73, 4.58.0.79, 4.58.0.86, 4.58.0.90
+ATOMCam2 Ver. 4.58.0.95, 4.58.0.97
 
-ATOMSwing Ver.4.37.1.85, 4.37.1.90, 4.37.1.93, 4.37.1.95
+ATOMSwing Ver. 4.37.1.95, 4.37.1.101
 
 
 
@@ -307,30 +315,78 @@ NASに録画しているファイルを自動削除する機能です。
 
 録画ファイルを保存しておく日数です。この日数経過すると自動的に削除されます。
 
+#### timelapse録画
+
+指定した一定時間毎に映像を記録します。早送りのような映像が作成できます。
+
+##### 保存するPATH
+
+SD-Card / NASのtime_lapseフォルダ以下のファイルのPATHを設定できます。書式はstrftimeの指定形式です。最後の/以降はファイル名として後ろに.mp4が付加されます。
+
+SD-Card録画、NAS録画の設定がonになっているメディアに記録されます。
+
+##### スケジュール
+
+開始する曜日と時間を指定します。
+
+録画の完了する時間が計算されますが、この時刻の後にmp4への変換処理をするので次の録画スタートまで５分以上間を空けてください。
+
+開始時刻から周期と回数で指定された枚数の記録をとり20fpsの録画ファイルを生成します。
+
+##### timelapse動作
+
+動作中は進捗を表示します。
+
+##### timelapse中止
+
+動作中に停止したい場合は、Lockを外して中止ボタンを押してください。
+
+mp4ファイルを生成して中止します。
+
 
 ### ストリーミング
 
-#### RTSP (not recommended)
-
-チェックを入れると、RTSPストリーミングを行います。 
-
-特に、システムの安定性に関わるため、利用には十分なテストを行ってください。  
-
 **※ 負荷が重いためSD-Cardのネットワークアクセスと同時使用は推奨しません。**
+
+#### RTSP Main
+
+Main(video0)側のRTSPストリーミングを行います。 
+
+HD(1920x1080p AVC or HEVC)の出力になります。
 
 ##### - 音声
 
-RTSPの音声をon/offします。音声をonにすると負荷が大きくなるので、必要でなければoffにしておいてください。
+Main側の音声をon/offします。
 
-##### - RTSP over HTTP
+##### - URL
+
+Main側のVLC media playerの「ネットワークストリーミングを開く」で入力するURLが表示されます。
+
+##### - フォーマット
+
+Main側のストリームフォーマットをAVC/HEVCのいずれかに切り替えます。
+
+#### RTSP Sub
+
+Sub(video1)側のRTSPストリーミングを行います。 
+
+360p(640x360p HEVC)の出力になります。
+
+##### - 音声
+
+Sub側の音声をon/offします。
+
+##### - URL
+
+Sub側のVLC media playerの「ネットワークストリーミングを開く」で入力するURLが表示されます。
+
+#### RTSP over HTTP
 
 RTSPをUDPでなくHTTP経由で送出します。
 
 AtomCamからPCまでの経路でのパケット伝送が保障されますが、再送により遅延が発生する可能性があります。
 
-##### - RTSP URL
-
-VLC media playerの「ネットワークストリーミングを開く」で入力するURLが表示されます。
+変更するとRTSP Main/SubのURLが変わります。
 
 
 ### イベント通知
@@ -372,6 +428,10 @@ WebHookを受け取るURLを指定します。今のところ実験的な実装�
 ##### - 定常録画保存
 
 １分間の定常録画が終了するたびに通知URLに type: recordEventをpostします。
+
+##### - タイムラプス開始
+
+タイムラプス開始時に通知URLに type: timelapseStart, data: timelapse pathをpostします。
 
 ##### - タイムラプス記録
 
@@ -492,18 +552,6 @@ GitHubのLatest VersionにUpdate します。GitHubからLatest Versionをダウ
  現在のtoolのバージョン（タイトル部に表示されています）がLatest Versionより古い場合のみUpdateすることができます。
 
 台数が多い場合や回線が細い場合、PCで[GitHubのLatest Version](https://github.com/mnakada/atomcam_tools/releases/latest)のatomcam_tools.zipをダウンロードし、展開せずにそのままSamba経由でSD-Cardのupdateフォルダに入れて、リブートすることでもUpdateできます。この場合はVerのチェックは行われません。
-
-**bug-fix**
-
-Latest Verが表示されない問題が発生しています。Latestが表示されていない場合、カスタム更新ZIPファイルをOnにしてURLに
-
-```
-https://github.com/mnakada/atomcam_tools/releases/latest/download/atomcam_tools.zip
-```
-
-を指定してから、１つ上のUpdateのLockを解除して**[CustomUpdate]**のボタンを押してください。
-
-Ver.1.3.0以降は修正しています。
 
 
 ### Copyright

@@ -15,13 +15,18 @@ patch -p1 < /src/patches/linux_makefile.patch
 cp /src/configs/atomcam_defconfig configs/
 cp /src/configs/busybox.config package/busybox
 make atomcam_defconfig
-make savedefconfig BR2_DEFCONFIG=/src/configs/atomcam_defconfig
 
 # mipsel-gcc for uLibc
 cd /atomtools/build
-git clone https://github.com/Dafang-Hacks/mips-gcc472-glibc216-64bit.git --depth 1
+if [ ! -d mips-gcc472-glibc216-64bit ] ; then
+  git clone https://github.com/Dafang-Hacks/mips-gcc472-glibc216-64bit.git --depth 1
+  cd mips-gcc472-glibc216-64bit
+  patch -p1 < /src/patches/linux_uclibc_hevc.patch
+fi
 
 # Start the build process
 cd /atomtools/build/buildroot-2016.02
 make clean
-make
+make host-uboot-tools
+make dosfstools-init
+make `make show-targets`

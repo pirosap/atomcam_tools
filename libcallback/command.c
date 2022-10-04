@@ -22,6 +22,7 @@ extern char *WaitMotion(int fd, char *tokenPtr);
 extern char *IrLed(int fd, char *tokenPtr);
 extern char *AudioPlay(int fd, char *tokenPtr);
 extern char *CurlDebug(int fd, char *tokenPtr);
+extern char *Timelapse(int fd, char *tokenPtr);
 
 struct CommandTableSt {
   const char *cmd;
@@ -37,10 +38,12 @@ struct CommandTableSt CommandTable[] = {
   { "irled",      &IrLed },
   { "aplay",      &AudioPlay },
   { "curlDebug",  &CurlDebug },
+  { "timelapse",  &Timelapse },
 };
 
 void CommandResponse(int fd, const char *res) {
 
+  if(fd < 0) return;
   unsigned char buf[256];
   buf[0] = strlen(res) + 1;
   buf[1] = fd;

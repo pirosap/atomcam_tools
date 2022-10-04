@@ -88,12 +88,12 @@ mv $FILE $TMPFILE
     fi
   fi
   if [ "$FMT" != "" ] ; then
-    if [ "$STORAGE_CIFS" = "on" -o "$STORAGE_CIFS" = "alarm" ] && /tmp/system/bin/mount_cifs && [ ! -f /tmp/disable_cifs ] ; then
+    if [ "$STORAGE_CIFS" = "on" -o "$STORAGE_CIFS" = "alarm" ] && /tmp/system/bin/mount_cifs ; then
       CIFSFILE=`date +"alarm_record/$STORAGE_CIFS_PATH.${FILE##*.}"`
       OUTFILE="/mnt/$HOSTNAME/$CIFSFILE"
       DIR_PATH=${OUTFILE%/*}
       mkdir -p $DIR_PATH
-      cp $TMPFILE $OUTFILE
+      cp -f $TMPFILE $OUTFILE
       STORAGE=", \"cifsFile\":\"${CIFSFILE}\""
     fi
 

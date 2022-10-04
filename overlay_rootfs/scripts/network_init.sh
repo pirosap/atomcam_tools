@@ -4,6 +4,10 @@ devmem 0x10011110 32 0x6e094800
 devmem 0x10011138 32 0x300
 devmem 0x10011134 32 0x300
 
+ifconfig lo up
+
+[ -x /media/mmc/network_init.sh ] && /media/mmc/network_init.sh start && exit
+
 VENDERID="0x024c"
 if [ -f /atom/system/driver/mmc_detect_test.ko ]; then
   insmod /atom/system/driver/mmc_detect_test.ko
